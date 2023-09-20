@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path'); // Import the path module
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -67,6 +68,14 @@ app.put('/api/students/:id', (req, res) => {
   };
 
   res.json({ message: 'Student updated successfully', student: students[studentIndex] });
+});
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Handle other routes and return the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 app.listen(port, () => {
