@@ -3,8 +3,16 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path'); // Import the path module
 
+
 const app = express();
 const port = process.env.PORT || 8000;
+
+const corsOptions = {
+  origin: 'https://student-app-five.vercel.app/', 
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, 
+};
+app.use(cors(corsOptions));
 
 // Middleware
 app.use(cors());
