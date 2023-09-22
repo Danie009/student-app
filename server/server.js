@@ -1,77 +1,120 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path'); // Import the path module
-
+const mysql = require('mysql2');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 8000;
-
-
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Define routes
-const students = [
-  { id: 1, name: 'Allan Kanoonya', className: 'Grade 10', parentContact: '+256-756-7890' },
-  { id: 2, name: 'Edgar Walugembe', className: 'Grade 10', parentContact: '+256-706-7890' },
-  { id: 3, name: 'Sharon Nakalema', className: 'Grade 10', parentContact: '+256-786-7890' },
-  { id: 4, name: 'Samuel Kiwumulo', className: 'Grade 10', parentContact: '+256-796-7890' },
-  { id: 5, name: 'Robert Ssekandi', className: 'Grade 10', parentContact: '+256-736-7890' },
-  { id: 6, name: 'Marvin Mugerwa', className: 'Grade 10', parentContact: '+256-746-7890' }
-  // Add more student data here
-];
-
-// Get all students
-app.get('/api/students', (req, res) => {
-  res.json(students);
+// MySQL Database Connection
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'school_database', // Change to your MySQL username
+  password: 'school_database', // Change to your MySQL password
+  database: 'school_database',
 });
 
-// Get a single student by ID
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL database:', err);
+    return;
+  }
+  console.log('Connected to MySQL database');
+});
+
+// Define API routes
+
+// Get all students from the MySQL database
+app.get('/api/students', (req, res) => {
+  connection.query('SELECT * FROM students', (err, results) => {
+    if (err) {
+      console.error('Error fetching data from MySQL:', err);
+      res.status(500).json({ error: 'Error fetching data' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Get a single student by ID from the MySQL database
 app.get('/api/students/:id', (req, res) => {
   const studentId = parseInt(req.params.id);
-  const student = students.find((s) => s.id === studentId);
-
-  if (!student) {
-    return res.status(404).json({ message: 'Student not found' });
-  }
-
-  res.json(student);
+  connection.query('SELECT * FROM students WHERE id = ?', [studentId], (err, results) => {
+    if (err) {
+      console.error('Error fetching data from MySQL:', err);
+      res.status(500).json({ error: 'Error fetching data' });
+      return;
+    }
+    if (results.length === 0) {
+      res.status(404).json({ message: 'Student not found' });
+      return;
+    }
+    res.json(results[0]);
+  });
 });
 
-// Add a new student
+// Add a new student to the MySQL database
 app.post('/api/students', (req, res) => {
-  const newStudent = req.body;
-  newStudent.id = students.length + 1;
-  students.push(newStudent);
-
-  // Send a success response
-  res.status(201).json({ message: 'Student added successfully', student: newStudent });
+  const { name, className, stream, address, city } = req.body;
+  connection.query(
+    'INSERT INTO students (name, className, stream, address, city) VALUES (?, ?, ?, ?, ?)',
+    [name, className, stream, address, city],
+    (err, results) => {
+      if (err) {
+        console.error('Error adding data to MySQL:', err);
+        res.status(500).json({ error: 'Error adding data' });
+        return;
+      }
+      const newStudentId = results.insertId;
+      res.status(201).json({ message: 'Student added successfully', studentId: newStudentId });
+    }
+  );
 });
 
-// Update an existing student by ID
+// Update an existing student by ID in the MySQL database
 app.put('/api/students/:id', (req, res) => {
   const studentId = parseInt(req.params.id);
-  const updatedStudent = req.body;
-  
-  // Find the student by ID
-  const studentIndex = students.findIndex((s) => s.id === studentId);
-
-  if (studentIndex === -1) {
-    return res.status(404).json({ message: 'Student not found' });
-  }
-
-  // Update the student data
-  students[studentIndex] = {
-    ...students[studentIndex],
-    ...updatedStudent,
-    id: studentId, // Ensure the ID remains unchanged
-  };
-
-  res.json({ message: 'Student updated successfully', student: students[studentIndex] });
+  const { name, className, stream, address, city } = req.body;
+  connection.query(
+    'UPDATE students SET name = ?, className = ?, stream = ?, address = ?, city = ? WHERE id = ?',
+    [name, className, stream, address, city, studentId],
+    (err, results) => {
+      if (err) {
+        console.error('Error updating data in MySQL:', err);
+        res.status(500).json({ error: 'Error updating data' });
+        return;
+      }
+      if (results.affectedRows === 0) {
+        res.status(404).json({ message: 'Student not found' });
+        return;
+      }
+      res.json({ message: 'Student updated successfully', studentId });
+    }
+  );
 });
+
+// Delete a student by ID from the MySQL database
+app.delete('/api/students/:id', (req, res) => {
+  const studentId = parseInt(req.params.id);
+  connection.query('DELETE FROM students WHERE id = ?', [studentId], (err, results) => {
+    if (err) {
+      console.error('Error deleting data from MySQL:', err);
+      res.status(500).json({ error: 'Error deleting data' });
+      return;
+    }
+    if (results.affectedRows === 0) {
+      res.status(404).json({ message: 'Student not found' });
+      return;
+    }
+    res.json({ message: 'Student deleted successfully', studentId });
+  });
+});
+
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));

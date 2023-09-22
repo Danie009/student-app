@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Button } from 'react-bootstrap'; 
+import { Container, Button } from 'react-bootstrap';
 
 function StudentDetail() {
   const { id } = useParams();
@@ -22,13 +22,15 @@ function StudentDetail() {
   }
 
   return (
-    <Container className="mt-5"> 
+    <Container className="mt-5">
       <h1>Student Details</h1>
       <p><strong>Name:</strong> {student.name}</p>
-      <p><strong>Class:</strong> {student.className}</p>
-      <p><strong>Parent Contact:</strong> {student.parentContact}</p>
+      <p><strong>className:</strong> {student.className}</p> 
+      <p><strong>Stream:</strong> {student.stream}</p> 
+      <p><strong>Address:</strong> {student.address}</p> 
+      <p><strong>City:</strong> {student.city}</p> 
       <Link to={`/edit-student/${student.id}`}>
-        <Button variant="primary">Edit Student</Button> 
+        <Button variant="primary">Edit Student</Button>
       </Link>
       <Link to="/" className="btn btn-secondary ms-2">Back to Student List</Link>
     </Container>

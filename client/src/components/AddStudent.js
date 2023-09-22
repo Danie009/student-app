@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Form, Button } from 'react-bootstrap'; 
+import { Container, Form, Button } from 'react-bootstrap';
 
 function AddStudent() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
-    className: '',
-    parentContact: '',
+    className: '', // Change 'class' to 'className'
+    stream: '',
+    address: '',
+    city: '',
   });
 
   const handleChange = (e) => {
@@ -29,24 +31,36 @@ function AddStudent() {
   };
 
   return (
-    <Container className="mt-5"> 
+    <Container className="mt-5">
       <h1>Add New Student</h1>
-      <Form onSubmit={handleSubmit}> 
+      <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>Name:</Form.Label>
           <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Class:</Form.Label>
-          <Form.Control type="text" name="className" value={formData.className} onChange={handleChange} />
+          <Form.Control type="text" name="className" value={formData.className} onChange={handleChange} /> {/* Change 'class' to 'className' */}
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Parent Contact:</Form.Label>
-          <Form.Control type="text" name="parentContact" value={formData.parentContact} onChange={handleChange} />
+          <Form.Label>Stream:</Form.Label>
+          <Form.Control type="text" name="stream" value={formData.stream} onChange={handleChange} />
         </Form.Group>
-        <Button variant="primary" type="submit">Add Student</Button> 
-        
-        <Link to="/" className="btn btn-secondary ms-2">Cancel</Link>
+        <Form.Group className="mb-3">
+          <Form.Label>Address:</Form.Label>
+          <Form.Control type="text" name="address" value={formData.address} onChange={handleChange} />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>City:</Form.Label>
+          <Form.Control type="text" name="city" value={formData.city} onChange={handleChange} />
+        </Form.Group>
+        <Button variant="primary" type="submit">
+          Add Student
+        </Button>
+
+        <Link to="/" className="btn btn-secondary ms-2">
+          Cancel
+        </Link>
       </Form>
     </Container>
   );
